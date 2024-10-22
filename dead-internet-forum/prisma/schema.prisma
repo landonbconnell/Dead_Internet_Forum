@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int      @id @default(autoincrement())
+  username          String   @unique
+  created_at        DateTime @default(now())
+  reputation        Int      @default(0)
+  profile_picture_url String?
+  bio               String?
+  is_banned         Boolean  @default(false)
+
+  // Relations
+  posts             Post[]
+  comments          Comment[]
+  forums            Forum[]  @relation("Subscribed_to_by")
+}
+
+model Forum {
+  id                Int      @id @default(autoincrement())
+  name              String
+  description       String?
+  created_at        DateTime @default(now())
+  rules             String?
+  post_count        Int
+  subscriber_count  Int
+  moderator_ids     Int[] // assuming this is an array of IDs
+
+  // Relations
+  posts             Post[]
+  users             User[]   @relation("Subscribed_to_by")
+}
+
+model Post {
+  id                Int      @id @default(autoincrement())
+  title             String
+  body              String
+  created_at        DateTime @default(now())
+  upvotes           Int      @default(0)
+  downvotes         Int      @default(0)
+  comment_count     Int      @default(0)
+  image_urls        String[] // assuming this is an array of image URLs
+
+  // Foreign Keys
+  author_id         Int
+  forum_id          Int
+
+  // Relations
+  author            User     @relation(fields: [author_id], references: [id])
+  forum             Forum    @relation(fields: [forum_id], references: [id])
+  comments          Comment[]
+}
+
+model Comment {
+  id                Int      @id @default(autoincrement())
+  content           String
+  created_at        DateTime @default(now())
+  upvotes           Int      @default(0)
+  downvotes         Int      @default(0)
+  is_deleted        Boolean  @default(false)
+
+  // Foreign Keys
+  post_id           Int
+  author_id         Int
+  parent_comment_id Int?     // Nullable if it's a top-level comment
+
+  // Relations
+  post              Post     @relation(fields: [post_id], references: [id])
+  author            User     @relation(fields: [author_id], references: [id])
+  parentComment     Comment? @relation("CommentToComment", fields: [parent_comment_id], references: [id])
+  replies           Comment[]@relation("CommentToComment")
+}
+
+
