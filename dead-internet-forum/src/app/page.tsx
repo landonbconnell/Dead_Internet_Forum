@@ -1,4 +1,16 @@
-// `app/page.tsx` is the UI for the `/` URL
-export default function Page() {
-  return <h1>Hello, Home page!</h1>;
+import prisma from '@/db';
+import { Post } from '.prisma/client';
+import PostComponent from '@/app/(components)/Post';
+
+export default async function Page() {
+  // Fetch data inside the component
+  const posts: Post[] = await prisma.post.findMany();
+
+  return (
+    <div>
+      {posts.map((post: Post) => (
+        <PostComponent post={post} />
+      ))}
+    </div>
+  );
 }

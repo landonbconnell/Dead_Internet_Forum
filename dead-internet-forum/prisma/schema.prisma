@@ -34,8 +34,8 @@ model Forum {
   description       String?
   created_at        DateTime @default(now())
   rules             String?
-  post_count        Int
-  subscriber_count  Int
+  post_count        Int      @default(0)
+  subscriber_count  Int      @default(0)
   moderator_ids     Int[] // assuming this is an array of IDs
 
   // Relations
